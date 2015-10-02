@@ -15,11 +15,11 @@ type CassandraStorage struct {
 	cluster *gocql.ClusterConfig
 }
 
-func NewCassandraStorage() *CassandraStorage {
+func NewCassandraStorage(hosts []string, keyspace string) *CassandraStorage {
 	r := &CassandraStorage{}
 
-	r.cluster = gocql.NewCluster("192.168.99.100:49153")
-	r.cluster.Keyspace = "oauth"
+	r.cluster = gocql.NewCluster(hosts...)
+	r.cluster.Keyspace = keyspace
 	r.cluster.Consistency = gocql.Quorum
 
 	return r
@@ -93,7 +93,7 @@ func (s *CassandraStorage) LoadAuthorize(code string) (*osin.AuthorizeData, erro
 	}
 	defer session.Close()
 
-	var clientId string
+	var clientId gocql.UUID
 	var clientSecret string
 	var aScope string
 	var redirectUri string
@@ -107,7 +107,7 @@ func (s *CassandraStorage) LoadAuthorize(code string) (*osin.AuthorizeData, erro
 	}
 
 	// TODO: created at time
-	client := &osin.DefaultClient{Id: clientId, Secret: clientSecret, RedirectUri: redirectUri}
+	client := &osin.DefaultClient{Id: clientId.String(), Secret: clientSecret, RedirectUri: redirectUri}
 	data := &osin.AuthorizeData{Client: client, Code: code, ExpiresIn: int32(ttl), Scope: aScope, State: state, RedirectUri: redirectUri, CreatedAt: time.Now()}
 
 	return data, nil
@@ -217,7 +217,7 @@ func (s *CassandraStorage) LoadAccess(code string) (*osin.AccessData, error) {
 	}
 	defer session.Close()
 
-	var clientId string
+	var clientId gocql.UUID
 	var clientSecret string
 	var accessCode string
 	var accessRedirectUri string
@@ -234,7 +234,7 @@ func (s *CassandraStorage) LoadAccess(code string) (*osin.AccessData, error) {
 		return nil, err
 	}
 
-	client := &osin.DefaultClient{Id: clientId, Secret: clientSecret, RedirectUri: redirectUri}
+	client := &osin.DefaultClient{Id: clientId.String(), Secret: clientSecret, RedirectUri: redirectUri}
 	data := &osin.AccessData{Client: client, AccessToken: code, RefreshToken: refreshToken, ExpiresIn: int32(expiresIn), Scope: aScope, RedirectUri: redirectUri, CreatedAt: time.Now(), UserData: userData}
 
 	return data, nil

@@ -1,7 +1,7 @@
 CREATE KEYSPACE oauth WITH REPLICATION = { 'class': 'SimpleStrategy', 'replication_factor': 1 };
 
 CREATE TABLE oauth.clients (
-  id TEXT,
+  id UUID,
 
   name TEXT,
   secret TEXT,
@@ -13,7 +13,7 @@ CREATE TABLE oauth.clients (
 CREATE TABLE oauth.access_grants (
   code TEXT,
 
-  client_id TEXT,
+  client_id UUID,
   client_secret TEXT,
   scope TEXT,
   redirect_uri TEXT,
@@ -25,7 +25,7 @@ CREATE TABLE oauth.access_grants (
 CREATE TABLE oauth.access_tokens (
   code TEXT,
 
-  client_id TEXT,
+  client_id UUID,
   client_secret TEXT,
   access_code TEXT,
   access_redirect_uri TEXT,
